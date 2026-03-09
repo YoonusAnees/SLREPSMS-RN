@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { loginApi, meApi, registerApi } from "../api/auth.api";
+import { http, setHttpToken } from "../api/http";
 
-export const useAuthStore = create((set, get) => ({
+export const useAuthStore = create((set) => ({
   token: null,
   user: null,
   loading: false,
@@ -10,11 +10,16 @@ export const useAuthStore = create((set, get) => ({
   login: async (payload) => {
     set({ loading: true, error: "" });
     try {
-      const data = await loginApi(payload);
+      const { data } = await http.post("/auth/login", payload);
+
+      const token = data.accessToken || data.token || null;
+      const user = data.user || null;
+
+      setHttpToken(token);
 
       set({
-        token: data.accessToken || data.token,
-        user: data.user || null,
+        token,
+        user,
         loading: false,
         error: "",
       });
@@ -30,7 +35,7 @@ export const useAuthStore = create((set, get) => ({
   register: async (payload) => {
     set({ loading: true, error: "" });
     try {
-      const data = await registerApi(payload);
+      const { data } = await http.post("/auth/register", payload);
       set({ loading: false, error: "" });
       return data;
     } catch (e) {
@@ -42,7 +47,7 @@ export const useAuthStore = create((set, get) => ({
 
   loadMe: async () => {
     try {
-      const data = await meApi();
+      const { data } = await http.get("/auth/me");
       set({ user: data });
       return data;
     } catch (e) {
@@ -50,5 +55,8 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  logout: () => set({ token: null, user: null, error: "" }),
+  logout: () => {
+    setHttpToken(null);
+    set({ token: null, user: null, error: "" });
+  },
 }));

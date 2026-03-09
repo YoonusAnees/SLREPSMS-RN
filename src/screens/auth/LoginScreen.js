@@ -12,13 +12,17 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleLogin() {
-    try {
-      await login({ email, password });
-    } catch (e) {
-      Alert.alert("Login Failed", e?.response?.data?.message || "Invalid credentials");
-    }
+ async function handleLogin() {
+  console.log("LOGIN CLICKED");
+
+  try {
+    const res = await login({ email, password });
+    console.log("LOGIN SUCCESS", res);
+  } catch (e) {
+    console.log("LOGIN ERROR", e);
+    Alert.alert("Login Failed", e?.response?.data?.message || "Invalid credentials");
   }
+}
 
   return (
     <Screen scroll={false}>

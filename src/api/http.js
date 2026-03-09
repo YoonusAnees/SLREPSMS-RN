@@ -1,17 +1,21 @@
 import axios from "axios";
-import { useAuthStore } from "../store/auth.store";
 
-const http = axios.create({
+let authToken = null;
+
+export function setHttpToken(token) {
+  authToken = token;
+}
+
+console.log("API BASE URL =", process.env.EXPO_PUBLIC_API_BASE_URL);
+
+export const http = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_BASE_URL,
-  timeout: 15000,
+  timeout: 3000,
 });
 
 http.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
   }
   return config;
 });
-
-export { http };
