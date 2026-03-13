@@ -29,7 +29,7 @@ function getInitials(name) {
 
 export default function DriverProfileScreen() {
   const { me, loadDashboardData, updateProfile } = useDriverStore();
-  const logout = useAuthStore((s) => s.logout);
+  const logout = useAuthStore((s) => s.logoutLocal);
 
   const [form, setForm] = useState({
     name: "",
@@ -38,7 +38,7 @@ export default function DriverProfileScreen() {
   });
 
   useEffect(() => {
-    loadDashboardData().catch(() => {});
+    loadDashboardData().catch(() => { });
   }, []);
 
   useEffect(() => {
