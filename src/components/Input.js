@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Input({
@@ -7,10 +8,14 @@ export default function Input({
   placeholder,
   secureTextEntry,
   multiline,
+  error,
 }) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={styles.wrap}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
+
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -18,26 +23,66 @@ export default function Input({
         placeholderTextColor="#64748b"
         secureTextEntry={secureTextEntry}
         multiline={multiline}
-        style={[styles.input, multiline && styles.textarea]}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={[
+          styles.input,
+          multiline && styles.textarea,
+          focused && styles.focused,
+          error && styles.errorInput,
+        ]}
       />
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 8 },
-  label: { color: "#cbd5e1", fontSize: 14, fontWeight: "600" },
+  wrap: {
+    marginBottom: 4,
+  },
+
+  label: {
+    color: "#cbd5e1",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+
   input: {
     backgroundColor: "#0f172a",
     borderWidth: 1,
     borderColor: "#334155",
-    borderRadius: 12,
-    color: "#fff",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: 14,
+    color: "#ffffff",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
+
+  focused: {
+    borderColor: "#3b82f6",
+  },
+
   textarea: {
-    minHeight: 110,
+    minHeight: 120,
     textAlignVertical: "top",
+  },
+
+  errorInput: {
+    borderColor: "#ef4444",
+  },
+
+  errorText: {
+    color: "#ef4444",
+    fontSize: 12,
+    marginTop: 4,
   },
 });

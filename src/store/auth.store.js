@@ -1,27 +1,27 @@
 import { create } from "zustand";
-import { http, setHttpToken } from "../api/http";
+import { http } from "../api/http";
 
 export const useAuthStore = create((set) => ({
-  token: null,
   user: null,
+  accessToken: null,
+  refreshToken: null,
   loading: false,
   error: "",
 
+  setTokens: (accessToken, refreshToken) =>
+    set({ accessToken, refreshToken }),
+
   login: async (payload) => {
     set({ loading: true, error: "" });
+
     try {
       const { data } = await http.post("/auth/login", payload);
 
-      const token = data.accessToken || data.token || null;
-      const user = data.user || null;
-
-      setHttpToken(token);
-
       set({
-        token,
-        user,
+        user: data.user,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
         loading: false,
-        error: "",
       });
 
       return data;
@@ -34,9 +34,12 @@ export const useAuthStore = create((set) => ({
 
   register: async (payload) => {
     set({ loading: true, error: "" });
+
     try {
       const { data } = await http.post("/auth/register", payload);
-      set({ loading: false, error: "" });
+
+      set({ loading: false });
+
       return data;
     } catch (e) {
       const msg = e?.response?.data?.message || "Registration failed";
@@ -48,15 +51,21 @@ export const useAuthStore = create((set) => ({
   loadMe: async () => {
     try {
       const { data } = await http.get("/auth/me");
+
       set({ user: data });
+
       return data;
     } catch (e) {
       throw e;
     }
   },
 
-  logout: () => {
-    setHttpToken(null);
-    set({ token: null, user: null, error: "" });
+  logoutLocal: () => {
+    set({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      error: "",
+    });
   },
 }));

@@ -4,10 +4,10 @@ import DriverNavigator from "./DriverNavigator";
 import OfficerNavigator from "./OfficerNavigator";
 
 export default function RootNavigator() {
-  const token = useAuthStore((s) => s.token);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
 
-  if (!token || !user) {
+  if (!accessToken || !user) {
     return <PublicDrawerNavigator />;
   }
 
