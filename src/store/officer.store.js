@@ -8,8 +8,13 @@ export const useOfficerStore = create((set) => ({
   loading: false,
   error: "",
 
+  lookupLoading: false,
+  lookupError: "",
+  lookedUp: null,
+
   loadDashboard: async () => {
     set({ loading: true, error: "" });
+
     try {
       const [dashboardRes, incidentsRes, violationsRes] = await Promise.all([
         http.get("/officer/dashboard/me"),
@@ -26,9 +31,25 @@ export const useOfficerStore = create((set) => ({
         loading: false,
         error: "",
       });
+
+      return dashboardRes.data;
     } catch (e) {
       const msg = e?.response?.data?.message || "Failed to load officer data";
       set({ loading: false, error: msg });
+      throw e;
+    }
+  },
+
+  loadViolationTypes: async () => {
+    try {
+      const { data } = await http.get("/violationTypes/get");
+
+      set({
+        violationTypes: Array.isArray(data) ? data : [],
+      });
+
+      return data;
+    } catch (e) {
       throw e;
     }
   },
@@ -68,9 +89,51 @@ export const useOfficerStore = create((set) => ({
   },
 
   lookupDriverByLicense: async (licenseNo) => {
-    const { data } = await http.get(
-      `/drivers/by-license/${encodeURIComponent(licenseNo)}`
-    );
-    return data;
+    const lic = (licenseNo || "").trim();
+
+    if (lic.length < 5) {
+      set({
+        lookedUp: null,
+        lookupError: "",
+        lookupLoading: false,
+      });
+      return null;
+    }
+
+    set({
+      lookupLoading: true,
+      lookupError: "",
+    });
+
+    try {
+      const { data } = await http.get(
+        `/drivers/by-license/${encodeURIComponent(lic)}`
+      );
+
+      set({
+        lookedUp: data,
+        lookupLoading: false,
+        lookupError: "",
+      });
+
+      return data;
+    } catch (e) {
+      const msg = e?.response?.data?.message || "Driver lookup failed";
+
+      set({
+        lookedUp: null,
+        lookupLoading: false,
+        lookupError: msg,
+      });
+
+      throw e;
+    }
   },
+
+  clearLookup: () =>
+    set({
+      lookedUp: null,
+      lookupError: "",
+      lookupLoading: false,
+    }),
 }));
